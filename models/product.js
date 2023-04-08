@@ -38,6 +38,11 @@ module.exports = (sequelize, DataTypes) => {
           notEmpty: true,
         },
       },
+      productImage: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: "product_image",
+      },
       categoryId: {
         type: DataTypes.INTEGER,
         field: "category_id",

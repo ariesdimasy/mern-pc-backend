@@ -3,33 +3,40 @@ const { Op } = require("sequelize");
 
 async function getAllProduct(req, res) {
   try {
-    var query = undefined;
+    var where = undefined;
     var order = req.query.order?.toUpperCase() || "ASC";
     var orderBy = req.query.orderBy || "id";
 
     var page = req.query.page || 1;
-    var limit = req.query.limit || 10;
+    var limit = Number(req.query.limit) || 10;
 
     const searchQuery = req.query.search?.toLowerCase();
 
     if (searchQuery) {
-      query = {
-        where: {
-          productName: {
-            [Op.like]: `%${searchQuery}%`,
-          },
+      where = {
+        productName: {
+          [Op.like]: `%${searchQuery}%`,
         },
       };
     }
 
-    var dataCount = await model.Product.count({ query });
+    var dataCount = await model.Product.count({
+      where: where,
+    });
     var pageCount = Math.ceil(dataCount / limit);
 
     const result = await model.Product.findAndCountAll({
-      query,
+      where: where,
       order: [[orderBy, order]],
       include: { model: model.Category, attributes: ["id", "categoryName"] },
-      attributes: ["id", "productName", "price", "description", "userId"],
+      attributes: [
+        "id",
+        "productName",
+        "price",
+        "description",
+        "userId",
+        "productImage",
+      ],
       limit: limit,
       offset: (page - 1) * limit,
     });
@@ -59,6 +66,7 @@ async function insertProduct(req, res) {
       description: req.body.description,
       categoryId: req.body.category_id,
       userId: req.body.user_id,
+      productImage: req.file ? req.file.filename : "",
     });
 
     res.status(200).json({
@@ -140,12 +148,34 @@ async function deleteProduct(req, res) {
 }
 
 async function productDetail(req, res) {
+  console.log("req ==> ", req);
   var status = 200;
   try {
     const result = await model.Product.findByPk(req.params.id, {
-      include: { model: model.Category, attributes: ["id", "categoryName"] },
-      attributes: ["id", "productName", "price", "description", "userId"],
+      include: [
+        { model: model.Category, attributes: ["id", "categoryName"] },
+        {
+          model: model.Comment,
+          attributes: ["id", "comment", "userId"],
+          include: [
+            {
+              model: model.User,
+              attributes: ["id", "name", "email", "authorization"],
+            },
+          ],
+        },
+      ],
+      attributes: [
+        "id",
+        "productName",
+        "price",
+        "description",
+        "userId",
+        "productImage",
+      ],
     });
+
+    console.log("result ===> ", result);
 
     if (result == null) {
       status = 404;

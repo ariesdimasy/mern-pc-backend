@@ -1,6 +1,9 @@
 const model = require("./../models");
 const { Op } = require("sequelize");
+var jwt = require("jsonwebtoken");
 const md5 = require("md5");
+const dotenv = require("dotenv");
+dotenv.config();
 
 async function getAllUser(req, res) {
   try {
@@ -71,6 +74,60 @@ async function userDetail(req, res) {
   } catch (err) {
     res.status(500).json({
       data: JSON.stringify(err),
+    });
+  }
+}
+
+async function login(req, res) {
+  try {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    const findUser = await model.User.findOne({
+      where: {
+        email: email,
+        password: md5(password),
+      },
+    });
+
+    console.log("findUser ==> ", findUser);
+
+    if (findUser) {
+      if (findUser.status === 0) {
+        res.status(400).json({
+          message:
+            "you cannot login with this account. please contact your administrator to activate your account",
+        });
+        return false;
+      }
+
+      var token = jwt.sign(
+        {
+          name: findUser.name,
+          email: findUser.email,
+          authorization: findUser.authorization,
+          exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour
+        },
+        process.env.JWT_SECRET_KEY
+      );
+
+      res.status(200).json({
+        message: "You successfully login",
+        data: {
+          name: findUser.name,
+          email: findUser.email,
+          authorization: findUser.authorization,
+          token: token,
+        },
+      });
+    } else {
+      res.status(400).json({
+        message: "your Email or your password are invalid, please try again",
+      });
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: JSON.stringify(err),
     });
   }
 }
@@ -178,4 +235,5 @@ module.exports = {
   register,
   updateUser,
   deleteUser,
+  login,
 };
