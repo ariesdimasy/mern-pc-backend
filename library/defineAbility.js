@@ -2,9 +2,7 @@ const { Ability, AbilityBuilder } = require("@casl/ability");
 
 function defineAbility(user) {
   const { can, build } = new AbilityBuilder(Ability);
-  if (user.authorization === "superadmin") {
-    console.log("superadmin");
-    can("read", "User");
+  if (user === "superadmin") {
     can("create", "User");
     can("update", "User");
     can("delete", "User");
@@ -23,8 +21,7 @@ function defineAbility(user) {
     can("create", "Comment");
     can("update", "Comment");
     can("delete", "Comment");
-  } else if (user.authorization == "admin") {
-    console.log("admin");
+  } else if (user == "admin") {
     can("read", "User");
 
     can("read", "Product");
@@ -41,8 +38,7 @@ function defineAbility(user) {
     can("create", "Comment");
     can("update", "Comment");
     can("delete", "Comment");
-  } else if (user.authorization == "member") {
-    console.log("member");
+  } else if (user == "member") {
     can("read", "Product");
     can("read", "Category");
 
@@ -51,7 +47,6 @@ function defineAbility(user) {
     can("update", "Comment");
     can("delete", "Comment");
   } else {
-    console.log("guest");
     can("read", "Product");
     can("read", "Category");
 

@@ -5,6 +5,7 @@ dotenv.config();
 
 function verifyToken(req, res, next) {
   var token = req?.headers?.token?.split(" ")[1];
+  console.log("token ==> ", token);
   if (!token) {
     return res.status(401).json({
       message: "you are not authorize access this page",
@@ -23,7 +24,6 @@ function verifyToken(req, res, next) {
       });
     } else {
       req.session.profile = decoded;
-      console.log(" LOGIN ==> ", decoded, req.session.profile);
       next();
     }
   });

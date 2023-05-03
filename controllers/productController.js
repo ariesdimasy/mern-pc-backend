@@ -71,6 +71,7 @@ async function insertProduct(req, res) {
 
     res.status(200).json({
       message: "success",
+      type: "add",
       data: result,
     });
   } catch (err) {
@@ -105,9 +106,16 @@ async function updateProduct(req, res) {
       }
     );
 
+    const product = await model.Product.findOne({
+      where: {
+        id: req.params.id,
+      },
+    });
+
     res.status(200).json({
       message: "success",
-      data: result,
+      type: "update",
+      data: product,
     });
   } catch (err) {
     var status = err.errors?.length > 1 ? 400 : 500;
@@ -132,6 +140,7 @@ async function deleteProduct(req, res) {
 
     res.status(200).json({
       message: "success",
+      type: "delete",
       data: result,
     });
   } catch (err) {
@@ -148,7 +157,6 @@ async function deleteProduct(req, res) {
 }
 
 async function productDetail(req, res) {
-  console.log("req ==> ", req);
   var status = 200;
   try {
     const result = await model.Product.findByPk(req.params.id, {
@@ -157,6 +165,7 @@ async function productDetail(req, res) {
         {
           model: model.Comment,
           attributes: ["id", "comment", "userId"],
+
           include: [
             {
               model: model.User,
@@ -174,8 +183,6 @@ async function productDetail(req, res) {
         "productImage",
       ],
     });
-
-    console.log("result ===> ", result);
 
     if (result == null) {
       status = 404;

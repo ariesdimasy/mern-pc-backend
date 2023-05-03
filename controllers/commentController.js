@@ -55,7 +55,7 @@ async function createComment(req, res) {
     const result = await model.Comment.create({
       productId: product_id,
       userId: user_id,
-      comment,
+      comment: comment,
       createdAt: created_at,
       updatedAt: updated_at,
     });

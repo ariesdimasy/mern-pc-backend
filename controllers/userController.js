@@ -90,8 +90,6 @@ async function login(req, res) {
       },
     });
 
-    console.log("findUser ==> ", findUser);
-
     if (findUser) {
       if (findUser.status === 0) {
         res.status(400).json({
@@ -103,6 +101,7 @@ async function login(req, res) {
 
       var token = jwt.sign(
         {
+          id: findUser.id,
           name: findUser.name,
           email: findUser.email,
           authorization: findUser.authorization,
@@ -114,6 +113,7 @@ async function login(req, res) {
       res.status(200).json({
         message: "You successfully login",
         data: {
+          id: findUser.id,
           name: findUser.name,
           email: findUser.email,
           authorization: findUser.authorization,
@@ -229,6 +229,23 @@ async function deleteUser(req, res) {
   }
 }
 
+function checkToken(req, res) {
+  var token = req?.headers?.token?.split(" ")[1];
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decode) => {
+    if (err) {
+      res.status(200).json({
+        message: "TokenError",
+        value: false,
+      });
+    } else {
+      res.status(200).json({
+        message: "Verified",
+        value: true,
+      });
+    }
+  });
+}
+
 module.exports = {
   getAllUser,
   userDetail,
@@ -236,4 +253,5 @@ module.exports = {
   updateUser,
   deleteUser,
   login,
+  checkToken,
 };
